@@ -2,11 +2,11 @@ module Main (main) where
 
 import Relude
 
-import Advent.Parse (char, eof, intP, newline, parsePuzzleInput, sepBy1, someTill)
+import Advent.Parse (char, intP, parsePuzzleInputLines, sepBy1)
 
 main :: IO ()
 main = do
-  reports <- parsePuzzleInput "data/2" $ someTill (sepBy1 intP (char ' ') <* newline) eof
+  reports <- parsePuzzleInputLines "data/2" $ sepBy1 intP (char ' ')
   putStrLn $ "Part 1: " <> show (length $ filter reportIsSafe reports)
   putStrLn $ "Part 2: " <> show (length $ filter reportIsSafeWithDampening reports)
 
