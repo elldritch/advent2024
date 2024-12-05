@@ -8,6 +8,7 @@ main :: IO ()
 main = do
   reports <- parsePuzzleInput "data/2" $ someTill (sepBy1 intP (char ' ') <* newline) eof
   putStrLn $ "Part 1: " <> show (length $ filter reportIsSafe reports)
+  putStrLn $ "Part 2: " <> show (length $ filter reportIsSafeWithDampening reports)
 
 reportIsSafe :: [Int] -> Bool
 reportIsSafe report = (allIncreasing || allDecreasing) && allGradual
@@ -17,3 +18,9 @@ reportIsSafe report = (allIncreasing || allDecreasing) && allGradual
   allIncreasing = all (< 0) deltas
   allDecreasing = all (> 0) deltas
   allGradual = all (\x -> let x' = abs x in x' >= 1 && x' <= 3) deltas
+
+reportIsSafeWithDampening :: [Int] -> Bool
+reportIsSafeWithDampening report = any reportIsSafe $ report : dampenedReports
+ where
+  dampenedReports = fmap (report `without`) [0 .. (length report)]
+  without xs i = take i xs ++ drop (i + 1) xs
