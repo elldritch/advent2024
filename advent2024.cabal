@@ -1,0 +1,64 @@
+cabal-version: 3.4
+name:          advent2024
+version:       0.1.0.0
+
+common options
+  default-language:   GHC2021
+  default-extensions:
+    DataKinds
+    DefaultSignatures
+    DeriveAnyClass
+    DerivingStrategies
+    DerivingVia
+    DuplicateRecordFields
+    EmptyDataDeriving
+    ExplicitNamespaces
+    GeneralizedNewtypeDeriving
+    LambdaCase
+    MultiWayIf
+    NoFieldSelectors
+    NoImplicitPrelude
+    OverloadedLabels
+    OverloadedRecordDot
+    OverloadedStrings
+    QuasiQuotes
+    RecordWildCards
+    StrictData
+    TemplateHaskell
+    TypeFamilies
+
+  ghc-options:
+    -Wall -Wincomplete-uni-patterns -Wcompat
+    -Wincomplete-record-updates -Wmissing-home-modules
+    -Wmissing-export-lists -Wredundant-constraints -Wunused-packages
+
+common base
+  build-depends: base ==4.17.2.1
+
+common relude
+  build-depends: relude ==1.2.2.0
+
+library
+  import:
+    options
+    , base
+    , relude
+
+  build-depends:
+    , megaparsec          ==9.7.0
+    , parser-combinators  ==1.3.0
+
+  hs-source-dirs:  src
+
+  -- cabal-fmt: expand src
+  exposed-modules: Advent.Parse
+
+executable day1
+  import:
+    options
+    , relude
+
+  ghc-options:    -threaded
+  build-depends:  advent2024
+  hs-source-dirs: cmd/
+  main-is:        Day1.hs
