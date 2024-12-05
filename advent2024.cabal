@@ -62,3 +62,13 @@ executable day1
   build-depends:  advent2024
   hs-source-dirs: cmd/
   main-is:        Day1.hs
+
+executable day2
+  import:
+    options
+    , relude
+
+  ghc-options:    -threaded
+  build-depends:  advent2024
+  hs-source-dirs: cmd/
+  main-is:        Day2.hs
