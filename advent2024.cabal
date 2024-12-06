@@ -70,3 +70,7 @@ executable day3
 executable day4
   import:  day, grid
   main-is: Day4.hs
+
+executable day5
+  import:  day
+  main-is: Day5.hs
