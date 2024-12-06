@@ -21,4 +21,4 @@ data Instruction = Enable | Disable | Mul (Int, Int)
 instructionP :: Parser Instruction
 instructionP = Enable <$ string "do()" <|> Disable <$ string "don't()" <|> Mul <$> mulP
  where
-  mulP = (,) <$> (string "mul(" *> intP) <*> (string "," *> intP <* string ")")
+  mulP = (,) <$> (string "mul(" *> intP) <* string "," <*> intP <* string ")"
