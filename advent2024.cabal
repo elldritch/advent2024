@@ -44,31 +44,26 @@ library
     , base
     , relude
 
-  build-depends:
-    , megaparsec          ==9.7.0
-    , parser-combinators  ==1.3.0
-
+  build-depends:   megaparsec ==9.7.0
   hs-source-dirs:  src
 
   -- cabal-fmt: expand src
   exposed-modules: Advent.Parse
 
-executable day1
-  import:
-    options
-    , relude
-
+common day
+  import:         options, relude
   ghc-options:    -threaded
   build-depends:  advent2024
   hs-source-dirs: cmd/
-  main-is:        Day1.hs
+
+executable day1
+  import:  day
+  main-is: Day1.hs
 
 executable day2
-  import:
-    options
-    , relude
+  import:  day
+  main-is: Day2.hs
 
-  ghc-options:    -threaded
-  build-depends:  advent2024
-  hs-source-dirs: cmd/
-  main-is:        Day2.hs
+executable day3
+  import:  day
+  main-is: Day3.hs

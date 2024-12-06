@@ -1,18 +1,19 @@
 module Advent.Parse (
+  Parser,
+  module Text.Megaparsec,
+  module Text.Megaparsec.Char,
+  module Text.Megaparsec.Debug,
   parsePuzzleInput,
   parsePuzzleInputLines,
   intP,
-  module Text.Megaparsec.Char,
-  module Control.Applicative.Combinators,
-  eof,
 ) where
 
 import Relude
 
-import Control.Applicative.Combinators
 import Data.Char (isDigit)
-import Text.Megaparsec (Parsec, eof, errorBundlePretty, runParser, takeWhile1P)
+import Text.Megaparsec
 import Text.Megaparsec.Char
+import Text.Megaparsec.Debug
 
 type Parser = Parsec Void Text
 
