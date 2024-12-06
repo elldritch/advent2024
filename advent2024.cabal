@@ -38,12 +38,11 @@ common base
 common relude
   build-depends: relude ==1.2.2.0
 
-library
-  import:
-    options
-    , base
-    , relude
+common grid
+  build-depends: grid ==7.8.15
 
+library
+  import:          options, base, relude
   build-depends:   megaparsec ==9.7.0
   hs-source-dirs:  src
 
@@ -67,3 +66,7 @@ executable day2
 executable day3
   import:  day
   main-is: Day3.hs
+
+executable day4
+  import:  day, grid
+  main-is: Day4.hs
