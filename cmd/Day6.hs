@@ -27,13 +27,13 @@ main = do
   putStrLn $ "Part 2: " <> show (length $ filter ((== Looping) . fst) obstructedRoutes)
 
 data Tile = Empty | Obstacle | Guard
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
 
 tileP :: Parser Tile
 tileP = Empty <$ char '.' <|> Obstacle <$ char '#' <|> Guard <$ char '^'
 
 data GuardOutcome = Exited | Looping
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
 
 visitedByGuard :: RectSquareGrid -> Set (Int, Int) -> (Int, Int) -> SquareDirection -> (GuardOutcome, Set (Int, Int))
 visitedByGuard grid obstacles start direction = go (Set.singleton (start, toOrd direction)) start direction
@@ -59,4 +59,4 @@ visitedByGuard grid obstacles start direction = go (Set.singleton (start, toOrd 
   toOrd West = West'
 
 data SquareDirection' = North' | East' | South' | West'
-  deriving (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
