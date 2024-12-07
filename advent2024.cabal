@@ -43,7 +43,10 @@ common grid
 
 library
   import:          options, base, relude
-  build-depends:   megaparsec ==9.7.0
+  build-depends:
+    , megaparsec          ==9.7.0
+    , parser-combinators  ==1.3.0
+
   hs-source-dirs:  src
 
   -- cabal-fmt: expand src
@@ -78,3 +81,7 @@ executable day5
 executable day6
   import:  day, grid
   main-is: Day6.hs
+
+executable day7
+  import:  day
+  main-is: Day7.hs

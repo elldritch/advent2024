@@ -3,6 +3,7 @@ module Advent.Parse (
   module Text.Megaparsec,
   module Text.Megaparsec.Char,
   module Text.Megaparsec.Debug,
+  sepBy1',
   parsePuzzleInput,
   parsePuzzleInputLines,
   intP,
@@ -10,6 +11,7 @@ module Advent.Parse (
 
 import Relude
 
+import Control.Monad.Combinators.NonEmpty qualified as NE (sepBy1)
 import Data.Char (isDigit)
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -30,3 +32,6 @@ intP = takeWhile1P (Just "digit") isDigit >>= mustRead
 
 mustRead :: (MonadFail m, Read a, ToString i) => i -> m a
 mustRead input = maybe (fail "intP") pure $ readMaybe $ toString input
+
+sepBy1' :: (MonadPlus m) => m a -> m sep -> m (NonEmpty a)
+sepBy1' = NE.sepBy1
