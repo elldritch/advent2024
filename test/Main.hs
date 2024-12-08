@@ -2,7 +2,7 @@ module Main (main) where
 
 import Relude
 
-import Test.Hspec (SpecWith, describe, hspec, it, shouldBe)
+import Test.Hspec (SpecWith, beforeAll, describe, hspec, it, shouldBe)
 
 import Advent.Parse (Parser, parsePuzzleInput)
 import Advent.Problems.Day1 qualified as Day1
@@ -12,6 +12,7 @@ import Advent.Problems.Day4 qualified as Day4
 import Advent.Problems.Day5 qualified as Day5
 import Advent.Problems.Day6 qualified as Day6
 import Advent.Problems.Day7 qualified as Day7
+import Advent.Problems.Day8 qualified as Day8
 
 main :: IO ()
 main = hspec $ do
@@ -23,8 +24,17 @@ main = hspec $ do
     day 5 (143, 123) Day5.parse Day5.solve
     day 6 (41, 6) Day6.parse Day6.solve
     day 7 (3749, 11387) Day7.parse Day7.solve
+    day 8 (14, undefined) Day8.parse Day8.solve
  where
-  day :: (Show part1, Show part2, Eq part1, Eq part2) => Int -> (part1, part2) -> Parser input -> (input -> (part1, part2)) -> SpecWith ()
-  day n (expected1, expected2) parse solve = it ("Day " <> show n) $ do
-    input <- liftIO $ parsePuzzleInput ("test/examples/" <> show n) parse
-    solve input `shouldBe` (expected1, expected2)
+  day ::
+    (Show part1, Show part2, Eq part1, Eq part2) =>
+    Int ->
+    (part1, part2) ->
+    Parser input ->
+    (input -> (part1, part2)) ->
+    SpecWith ()
+  day n (expected1, expected2) parse solve =
+    beforeAll (liftIO $ parsePuzzleInput ("test/examples/" <> show n) parse) $
+      describe ("Day " <> show n) $ do
+        it "Part 1" $ \input -> fst (solve input) `shouldBe` expected1
+        it "Part 2" $ \input -> snd (solve input) `shouldBe` expected2

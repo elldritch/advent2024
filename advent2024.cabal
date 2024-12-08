@@ -59,6 +59,7 @@ library
     Advent.Problems.Day5
     Advent.Problems.Day6
     Advent.Problems.Day7
+    Advent.Problems.Day8
 
 executable advent2024
   import:         options, relude
