@@ -13,6 +13,15 @@ import Advent.Parse (Parser, char, gridP)
 parse :: Parser (Map (Index RectSquareGrid) Tile, RectSquareGrid)
 parse = gridP rectSquareGrid tileP
 
+data Tile = Empty | Obstacle | Guard
+  deriving stock (Show, Eq)
+
+tileP :: Parser Tile
+tileP = Empty <$ char '.' <|> Obstacle <$ char '#' <|> Guard <$ char '^'
+
+data GuardOutcome = Exited | Looping
+  deriving stock (Show, Eq)
+
 solve :: (Map (Index RectSquareGrid) Tile, RectSquareGrid) -> (Int, Int)
 solve (tileMap, grid) =
   ( length route
@@ -24,15 +33,6 @@ solve (tileMap, grid) =
   start = fst $ fromMaybe (error "room has no guard") $ find ((== Guard) . snd) tiles
   route = snd $ visitedByGuard grid obstacles start North
   obstructedRoutes = (\pos -> visitedByGuard grid (Set.insert pos obstacles) start North) <$> toList route
-
-data Tile = Empty | Obstacle | Guard
-  deriving stock (Show, Eq)
-
-tileP :: Parser Tile
-tileP = Empty <$ char '.' <|> Obstacle <$ char '#' <|> Guard <$ char '^'
-
-data GuardOutcome = Exited | Looping
-  deriving stock (Show, Eq)
 
 visitedByGuard :: RectSquareGrid -> Set (Index RectSquareGrid) -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid))
 visitedByGuard grid obstacles start direction = go (Set.singleton (start, toOrd direction)) start direction
