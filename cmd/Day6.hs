@@ -1,27 +1,22 @@
 module Main (main) where
 
 import Relude
-import Relude.Extra (maximum1, member)
+import Relude.Extra (member, toPairs)
 
 import Data.Set qualified as Set
 import Math.Geometry.Grid (neighbour)
 import Math.Geometry.Grid.Square (RectSquareGrid, rectSquareGrid)
 import Math.Geometry.Grid.SquareInternal (SquareDirection (..))
 
-import Advent.Parse (Parser, char, eof, manyTill, newline, parsePuzzleInput)
+import Advent.Parse (Parser, char, parsePuzzleInputGrid)
 
 main :: IO ()
 main = do
-  (grid, obstacles, start) <- parsePuzzleInput "data/6" $ do
-    tiles <- zip [0 ..] <$> manyTill (zip [0 ..] <$> manyTill tileP newline) eof
-    let tiles' = fromMaybe (error "room map is empty") $ nonEmpty $ concatMap (\(y, row) -> fmap (\(x, c) -> ((x, y), c)) row) tiles
-        maxX = maximum1 $ fst . fst <$> tiles'
-        maxY = maximum1 $ snd . fst <$> tiles'
-        tiles'' = first (second (maxY -)) <$> toList tiles'
-        obstacles = Set.fromList $ map fst $ filter ((== Obstacle) . snd) tiles''
-        start = fst $ fromMaybe (error "room has no guard") $ find ((== Guard) . snd) tiles''
-    pure (rectSquareGrid (maxX + 1) (maxY + 1), obstacles, start)
-  let route = snd $ visitedByGuard grid obstacles start North
+  (tileMap, grid) <- parsePuzzleInputGrid "data/6" rectSquareGrid tileP
+  let tiles = toPairs tileMap
+      obstacles = Set.fromList $ map fst $ filter ((== Obstacle) . snd) tiles
+      start = fst $ fromMaybe (error "room has no guard") $ find ((== Guard) . snd) tiles
+      route = snd $ visitedByGuard grid obstacles start North
   putStrLn $ "Part 1: " <> show (length route)
   let obstructedRoutes = (\pos -> visitedByGuard grid (Set.insert pos obstacles) start North) <$> toList route
   putStrLn $ "Part 2: " <> show (length $ filter ((== Looping) . fst) obstructedRoutes)

@@ -1,25 +1,18 @@
 module Main (main) where
 
 import Relude
-import Relude.Extra (lookup, maximum1)
+import Relude.Extra (lookup)
 
-import Data.Map.Strict qualified as Map
 import Math.Geometry.Grid (Direction, Grid, Index, indices, neighbour)
 import Math.Geometry.Grid.Octagonal (rectOctGrid)
 import Math.Geometry.Grid.OctagonalInternal (OctDirection (..))
 
-import Advent.Parse (anySingleBut, eof, manyTill, newline, parsePuzzleInput)
+import Advent.Parse (oneOf, parsePuzzleInputGrid)
 
 main :: IO ()
 main = do
-  wordMap <- parsePuzzleInput "data/4" $ do
-    tiles <- zip [0 ..] <$> manyTill (zip [0 ..] <$> manyTill (anySingleBut '\n') newline) eof
-    pure $ Map.fromList $ concatMap (\(y, row) -> fmap (\(x, c) -> ((x, y), c)) row) tiles
-  let keys = fromMaybe (error "no tiles") $ nonEmpty $ Map.keys wordMap
-      maxX = maximum1 $ fst <$> keys
-      maxY = maximum1 $ snd <$> keys
-      grid = rectOctGrid (maxX + 1) (maxY + 1)
-      finds = concatMap (\loc -> fmap (xmasInDirection wordMap grid loc) directions) $ indices grid
+  (wordMap, grid) <- parsePuzzleInputGrid "data/4" rectOctGrid (oneOf ['X', 'M', 'A', 'S'])
+  let finds = concatMap (\loc -> fmap (xmasInDirection wordMap grid loc) directions) $ indices grid
   putStrLn $ "Part 1: " <> show (length $ filter id finds)
   putStrLn $ "Part 2: " <> show (length $ filter id $ xmasInSquare wordMap <$> indices grid)
  where

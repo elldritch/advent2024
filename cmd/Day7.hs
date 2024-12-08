@@ -2,11 +2,11 @@ module Main (main) where
 
 import Relude
 
-import Advent.Parse (char, intP, parsePuzzleInputLines, sepBy1', string)
+import Advent.Parse (char, intP, parsePuzzleInputLines, sepBy1, string)
 
 main :: IO ()
 main = do
-  equations <- parsePuzzleInputLines "data/7" $ (,) <$> intP <* string ": " <*> sepBy1' intP (char ' ')
+  equations <- parsePuzzleInputLines "data/7" $ (,) <$> intP <* string ": " <*> sepBy1 intP (char ' ')
   let calibrateWith f = sum $ fst <$> filter (uncurry f) equations
   putStrLn $ "Part 1: " <> show (calibrateWith satisfiable)
   putStrLn $ "Part 1: " <> show (calibrateWith satisfiable')

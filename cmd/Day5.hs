@@ -7,7 +7,7 @@ import Relude.Unsafe ((!!))
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 
-import Advent.Parse (char, eof, intP, manyTill, newline, parsePuzzleInput, sepBy1)
+import Advent.Parse (char, eof, intP, manyTill, newline, parsePuzzleInput, sepBy)
 
 main :: IO ()
 main = do
@@ -15,7 +15,7 @@ main = do
     parsePuzzleInput "data/5" $
       (,)
         <$> manyTill ((,) <$> intP <* char '|' <*> intP <* newline) newline
-        <*> manyTill (sepBy1 intP (char ',') <* newline) eof
+        <*> manyTill (sepBy intP (char ',') <* newline) eof
   let ordered = filter (updateIsOrdered rules) updates
   putStrLn $ "Part 1: " <> show (sum $ mid <$> ordered)
   let unordered = filter (not . updateIsOrdered rules) updates

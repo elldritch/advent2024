@@ -21,6 +21,7 @@ common options
     OverloadedLabels
     OverloadedRecordDot
     OverloadedStrings
+    PartialTypeSignatures
     QuasiQuotes
     RecordWildCards
     StrictData
@@ -50,7 +51,9 @@ library
   hs-source-dirs:  src
 
   -- cabal-fmt: expand src
-  exposed-modules: Advent.Parse
+  exposed-modules:
+    Advent.NonEmpty
+    Advent.Parse
 
 common day
   import:         options, relude
