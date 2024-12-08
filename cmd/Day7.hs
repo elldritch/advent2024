@@ -9,7 +9,7 @@ main = do
   equations <- parsePuzzleInputLines "data/7" $ (,) <$> intP <* string ": " <*> sepBy1 intP (char ' ')
   let calibrateWith f = sum $ fst <$> filter (uncurry f) equations
   putStrLn $ "Part 1: " <> show (calibrateWith satisfiable)
-  putStrLn $ "Part 1: " <> show (calibrateWith satisfiable')
+  putStrLn $ "Part 2: " <> show (calibrateWith satisfiable')
 
 satisfiable :: Int -> NonEmpty Int -> Bool
 satisfiable = satisfiableWith [(+), (*)]
