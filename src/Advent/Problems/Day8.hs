@@ -1,11 +1,10 @@
 module Advent.Problems.Day8 (parse, solve) where
 
 import Relude
-import Relude.Extra (lookup, toPairs)
+import Relude.Extra (bimapBoth, lookup, toPairs)
 
 import Data.List ((\\))
 import Data.Map.Strict qualified as Map
-import Data.Set qualified as Set
 import Math.Geometry.Grid (Index, contains)
 import Math.Geometry.Grid.Square (RectSquareGrid, rectSquareGrid)
 
@@ -21,18 +20,20 @@ tileP :: Parser Tile
 tileP = Empty <$ char '.' <|> Antenna <$> noneOf ['.', '\n']
 
 solve :: (Map (Index RectSquareGrid) Tile, RectSquareGrid) -> (Int, Int)
-solve (tileMap, grid) =
-  ( length $ Set.filter (grid `contains`) antinodes
-  , undefined
-  )
+solve (tileMap, grid) = bimapBoth (length . antinodesWith) (fundamentalAntinodes, harmonicAntinodes)
  where
   antennae = mapMaybe (\case ((x, y), Antenna c) -> Just ((x, y), c); _ -> Nothing) $ toPairs tileMap
-  antennaeByFrequency = Map.fromListWith (<>) $ second (one @[(Int, Int)]) . swap <$> antennae
-  antinodesOf ((x, y), freq) = concatMap antinodeWithPartner partners
+  antennaeByFrequency = Map.fromListWith (<>) $ second one . swap <$> antennae
+
+  antennaAntinodesWith generator (pos, freq) =
+    concatMap
+      (takeWhile (grid `contains`) . generator pos)
+      $ fromMaybe mempty (lookup freq antennaeByFrequency) \\ [pos]
+  antinodesWith generator = sortNub $ concatMap (antennaAntinodesWith generator) antennae
+
+  fundamentalAntinodes = allAntinodes [2]
+  harmonicAntinodes = allAntinodes (0 : [2 ..])
+  allAntinodes harmonics (x, y) (x', y') = [(x + i * dx, y + i * dy) | i <- harmonics]
    where
-    partners = fromMaybe mempty $ lookup freq antennaeByFrequency
-    antinodeWithPartner (x', y') = [(x + dx, y + dy), (x - dx, y - dy)] \\ [(x, y), (x', y')]
-     where
-      dx = x - x'
-      dy = y - y'
-  antinodes = Set.fromList (concatMap antinodesOf antennae)
+    dx = x' - x
+    dy = y' - y
