@@ -1,25 +1,29 @@
-module Main (main) where
+module Advent.Problems.Day6 (parse, solve) where
 
 import Relude
 import Relude.Extra (member, toPairs)
 
 import Data.Set qualified as Set
-import Math.Geometry.Grid (neighbour)
+import Math.Geometry.Grid (Index, neighbour)
 import Math.Geometry.Grid.Square (RectSquareGrid, rectSquareGrid)
 import Math.Geometry.Grid.SquareInternal (SquareDirection (..))
 
-import Advent.Parse (Parser, char, parsePuzzleInputGrid)
+import Advent.Parse (Parser, char, gridP)
 
-main :: IO ()
-main = do
-  (tileMap, grid) <- parsePuzzleInputGrid "data/6" rectSquareGrid tileP
-  let tiles = toPairs tileMap
-      obstacles = Set.fromList $ map fst $ filter ((== Obstacle) . snd) tiles
-      start = fst $ fromMaybe (error "room has no guard") $ find ((== Guard) . snd) tiles
-      route = snd $ visitedByGuard grid obstacles start North
-  putStrLn $ "Part 1: " <> show (length route)
-  let obstructedRoutes = (\pos -> visitedByGuard grid (Set.insert pos obstacles) start North) <$> toList route
-  putStrLn $ "Part 2: " <> show (length $ filter ((== Looping) . fst) obstructedRoutes)
+parse :: Parser (Map (Index RectSquareGrid) Tile, RectSquareGrid)
+parse = gridP rectSquareGrid tileP
+
+solve :: (Map (Index RectSquareGrid) Tile, RectSquareGrid) -> (Int, Int)
+solve (tileMap, grid) =
+  ( length route
+  , length $ filter ((== Looping) . fst) obstructedRoutes
+  )
+ where
+  tiles = toPairs tileMap
+  obstacles = Set.fromList $ map fst $ filter ((== Obstacle) . snd) tiles
+  start = fst $ fromMaybe (error "room has no guard") $ find ((== Guard) . snd) tiles
+  route = snd $ visitedByGuard grid obstacles start North
+  obstructedRoutes = (\pos -> visitedByGuard grid (Set.insert pos obstacles) start North) <$> toList route
 
 data Tile = Empty | Obstacle | Guard
   deriving stock (Show, Eq)
@@ -30,10 +34,10 @@ tileP = Empty <$ char '.' <|> Obstacle <$ char '#' <|> Guard <$ char '^'
 data GuardOutcome = Exited | Looping
   deriving stock (Show, Eq)
 
-visitedByGuard :: RectSquareGrid -> Set (Int, Int) -> (Int, Int) -> SquareDirection -> (GuardOutcome, Set (Int, Int))
+visitedByGuard :: RectSquareGrid -> Set (Index RectSquareGrid) -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid))
 visitedByGuard grid obstacles start direction = go (Set.singleton (start, toOrd direction)) start direction
  where
-  go :: Set ((Int, Int), SquareDirection') -> (Int, Int) -> SquareDirection -> (GuardOutcome, Set (Int, Int))
+  go :: Set (Index RectSquareGrid, SquareDirection') -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid))
   go seen pos facing = case neighbour grid pos facing of
     Nothing -> (Exited, Set.map fst seen)
     Just pos' ->

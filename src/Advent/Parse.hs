@@ -5,8 +5,8 @@ module Advent.Parse (
   module Text.Megaparsec.Debug,
   module Control.Monad.Combinators.NonEmpty,
   parsePuzzleInput,
-  parsePuzzleInputLines,
-  parsePuzzleInputGrid,
+  linesP,
+  gridP,
   intP,
 ) where
 
@@ -28,11 +28,11 @@ parsePuzzleInput fp p = readFileText' fp >>= either (error . toText . errorBundl
  where
   readFileText' = fmap decodeUtf8 . readFileBS
 
-parsePuzzleInputLines :: FilePath -> Parser a -> IO [a]
-parsePuzzleInputLines fp lineP = parsePuzzleInput fp $ manyTill (lineP <* newline) eof
+linesP :: Parser a -> Parser [a]
+linesP lineP = manyTill (lineP <* newline) eof
 
-parsePuzzleInputGrid :: FilePath -> (Int -> Int -> grid) -> Parser tile -> IO (Map (Int, Int) tile, grid)
-parsePuzzleInputGrid fp makeGrid tileP = parsePuzzleInput fp $ do
+gridP :: (Int -> Int -> grid) -> Parser tile -> Parser (Map (Int, Int) tile, grid)
+gridP makeGrid tileP = do
   tiles <- NE.zip NE.ints <$> someTill (NE.zip NE.ints <$> someTill tileP newline) eof
   let tiles' = NE.concatMap (\(y, row) -> fmap (\(x, c) -> ((x, y), c)) row) tiles
       coords = fst <$> tiles'

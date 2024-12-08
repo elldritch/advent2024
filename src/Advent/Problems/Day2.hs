@@ -1,14 +1,17 @@
-module Main (main) where
+module Advent.Problems.Day2 (parse, solve) where
 
 import Relude
 
-import Advent.Parse (char, intP, parsePuzzleInputLines, sepBy)
+import Advent.Parse (Parser, char, intP, linesP, sepBy)
 
-main :: IO ()
-main = do
-  reports <- parsePuzzleInputLines "data/2" $ sepBy intP (char ' ')
-  putStrLn $ "Part 1: " <> show (length $ filter reportIsSafe reports)
-  putStrLn $ "Part 2: " <> show (length $ filter reportIsSafeWithDampening reports)
+parse :: Parser [[Int]]
+parse = linesP $ sepBy intP (char ' ')
+
+solve :: [[Int]] -> (Int, Int)
+solve reports =
+  ( length $ filter reportIsSafe reports
+  , length $ filter reportIsSafeWithDampening reports
+  )
 
 reportIsSafe :: [Int] -> Bool
 reportIsSafe report = (allIncreasing || allDecreasing) && allGradual

@@ -1,27 +1,25 @@
-module Main (main) where
+module Advent.Problems.Day5 (parse, solve) where
 
 import Relude
 import Relude.Extra (lookup, member)
 import Relude.Unsafe ((!!))
 
+import Data.List (partition)
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 
-import Advent.Parse (char, eof, intP, manyTill, newline, parsePuzzleInput, sepBy)
+import Advent.Parse (Parser, char, eof, intP, manyTill, newline, sepBy)
 
-main :: IO ()
-main = do
-  (rules, updates) <-
-    parsePuzzleInput "data/5" $
-      (,)
-        <$> manyTill ((,) <$> intP <* char '|' <*> intP <* newline) newline
-        <*> manyTill (sepBy intP (char ',') <* newline) eof
-  let ordered = filter (updateIsOrdered rules) updates
-  putStrLn $ "Part 1: " <> show (sum $ mid <$> ordered)
-  let unordered = filter (not . updateIsOrdered rules) updates
-  putStrLn $ "Part 2: " <> show (sum $ mid . fixUpdate rules <$> unordered)
+parse :: Parser ([(Int, Int)], [[Int]])
+parse =
+  (,)
+    <$> manyTill ((,) <$> intP <* char '|' <*> intP <* newline) newline
+    <*> manyTill (sepBy intP (char ',') <* newline) eof
+
+solve :: ([(Int, Int)], [[Int]]) -> (Int, Int)
+solve (rules, updates) = (sum $ mid <$> ordered, sum $ mid . fixUpdate rules <$> unordered)
  where
-  mid :: [Int] -> Int
+  (ordered, unordered) = partition (updateIsOrdered rules) updates
   mid xs = xs !! (length xs `div` 2)
 
 updateIsOrdered :: [(Int, Int)] -> [Int] -> Bool

@@ -1,15 +1,19 @@
-module Main (main) where
+module Advent.Problems.Day7 (parse, solve) where
 
 import Relude
 
-import Advent.Parse (char, intP, parsePuzzleInputLines, sepBy1, string)
+import Advent.Parse (Parser, char, intP, linesP, sepBy1, string)
 
-main :: IO ()
-main = do
-  equations <- parsePuzzleInputLines "data/7" $ (,) <$> intP <* string ": " <*> sepBy1 intP (char ' ')
-  let calibrateWith f = sum $ fst <$> filter (uncurry f) equations
-  putStrLn $ "Part 1: " <> show (calibrateWith satisfiable)
-  putStrLn $ "Part 2: " <> show (calibrateWith satisfiable')
+parse :: Parser [(Int, NonEmpty Int)]
+parse = linesP $ (,) <$> intP <* string ": " <*> sepBy1 intP (char ' ')
+
+solve :: [(Int, NonEmpty Int)] -> (Int, Int)
+solve equations =
+  ( calibrateWith satisfiable
+  , calibrateWith satisfiable'
+  )
+ where
+  calibrateWith f = sum $ fst <$> filter (uncurry f) equations
 
 satisfiable :: Int -> NonEmpty Int -> Bool
 satisfiable = satisfiableWith [(+), (*)]
@@ -18,7 +22,7 @@ satisfiable' :: Int -> NonEmpty Int -> Bool
 satisfiable' = satisfiableWith [(+), (*), digitConcat]
  where
   digitConcat :: Int -> Int -> Int
-  digitConcat x y = x * (10 ^ (floor @Double @Int (logBase 10 (fromIntegral y)) + 1)) + y
+  digitConcat x y = x * 10 ^ (floor @Double @Int (logBase 10 (fromIntegral y)) + 1) + y
 
 satisfiableWith :: [Int -> Int -> Int] -> Int -> NonEmpty Int -> Bool
 satisfiableWith fs target operands = elem target $ go (head operands) $ tail operands

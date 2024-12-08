@@ -39,12 +39,10 @@ common base
 common relude
   build-depends: relude ==1.2.2.0
 
-common grid
-  build-depends: grid ==7.8.15
-
 library
   import:          options, base, relude
   build-depends:
+    , grid                ==7.8.15
     , megaparsec          ==9.7.0
     , parser-combinators  ==1.3.0
 
@@ -54,37 +52,30 @@ library
   exposed-modules:
     Advent.NonEmpty
     Advent.Parse
+    Advent.Problems.Day1
+    Advent.Problems.Day2
+    Advent.Problems.Day3
+    Advent.Problems.Day4
+    Advent.Problems.Day5
+    Advent.Problems.Day6
+    Advent.Problems.Day7
 
-common day
+executable advent2024
   import:         options, relude
   ghc-options:    -threaded
-  build-depends:  advent2024
-  hs-source-dirs: cmd/
+  build-depends:
+    , advent2024
+    , optparse-applicative  ==0.18.1.0
 
-executable day1
-  import:  day
-  main-is: Day1.hs
+  hs-source-dirs: cmd/advent2024
+  main-is:        Main.hs
 
-executable day2
-  import:  day
-  main-is: Day2.hs
+test-suite examples
+  import:         options, relude
+  type:           exitcode-stdio-1.0
+  build-depends:
+    , advent2024
+    , hspec       ==2.11.10
 
-executable day3
-  import:  day
-  main-is: Day3.hs
-
-executable day4
-  import:  day, grid
-  main-is: Day4.hs
-
-executable day5
-  import:  day
-  main-is: Day5.hs
-
-executable day6
-  import:  day, grid
-  main-is: Day6.hs
-
-executable day7
-  import:  day
-  main-is: Day7.hs
+  hs-source-dirs: test
+  main-is:        Main.hs
