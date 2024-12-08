@@ -15,5 +15,5 @@ solve (xs, ys) =
   , sum similarities
   )
  where
-  counts = foldl' (\m y -> Map.insertWith (+) y 1 m) mempty ys
+  counts = Map.fromListWith (+) $ (,1) <$> ys
   similarities = (\x -> x * fromMaybe 0 (Map.lookup x counts)) <$> xs

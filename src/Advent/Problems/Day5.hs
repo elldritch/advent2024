@@ -30,7 +30,7 @@ updateIsOrdered rules pages = snd $ foldl' checkPage (mempty, True) pages
   checkPage :: (Set Int, Bool) -> Int -> (Set Int, Bool)
   checkPage (seen, ok) page = (Set.insert page seen, Set.intersection seen afters == mempty && ok)
    where
-    afters = fromMaybe mempty $ Map.lookup page rulesMap
+    afters = fromMaybe mempty $ lookup page rulesMap
 
 fixUpdate :: [(Int, Int)] -> [Int] -> [Int]
 fixUpdate rules pages = sortBy compareByRules pages
@@ -44,7 +44,7 @@ fixUpdate rules pages = sortBy compareByRules pages
         <|> (lookup y rulesMap >>= (\afterY -> if x `member` afterY then Just GT else Nothing))
 
 makeRulesMap :: [(Int, Int)] -> [Int] -> Map Int (Set Int)
-makeRulesMap rules pages = foldl' (\m (before, after) -> Map.insertWith (<>) before (Set.singleton after) m) mempty rules'
+makeRulesMap rules pages = Map.fromListWith (<>) $ second Set.singleton <$> rules'
  where
   pagesSet = Set.fromList pages
   rules' = filter (\(before, after) -> before `member` pagesSet && after `member` pagesSet) rules

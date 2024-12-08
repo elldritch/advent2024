@@ -29,13 +29,13 @@ solve (tileMap, grid) =
   )
  where
   tiles = toPairs tileMap
-  obstacles = Set.fromList $ map fst $ filter ((== Obstacle) . snd) tiles
+  obstacles = fromList $ map fst $ filter ((== Obstacle) . snd) tiles
   start = fst $ fromMaybe (error "room has no guard") $ find ((== Guard) . snd) tiles
   route = snd $ visitedByGuard grid obstacles start North
   obstructedRoutes = (\pos -> visitedByGuard grid (Set.insert pos obstacles) start North) <$> toList route
 
 visitedByGuard :: RectSquareGrid -> Set (Index RectSquareGrid) -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid))
-visitedByGuard grid obstacles start direction = go (Set.singleton (start, toOrd direction)) start direction
+visitedByGuard grid obstacles start direction = go (one (start, toOrd direction)) start direction
  where
   go :: Set (Index RectSquareGrid, SquareDirection') -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid))
   go seen pos facing = case neighbour grid pos facing of
