@@ -1,0 +1,6 @@
+{
+  "files.associations": {
+    "../data": "plaintext",
+    "../test/examples": "plaintext"
+  }
+}
