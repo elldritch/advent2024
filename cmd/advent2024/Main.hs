@@ -13,6 +13,7 @@ import Advent.Problems.Day5 qualified as Day5
 import Advent.Problems.Day6 qualified as Day6
 import Advent.Problems.Day7 qualified as Day7
 import Advent.Problems.Day8 qualified as Day8
+import Advent.Problems.Day9 qualified as Day9
 
 newtype Argv = Argv {day :: Int}
 
@@ -34,6 +35,7 @@ main = do
     6 -> parsePuzzleInput "data/6" Day6.parse >>= output . Day6.solve
     7 -> parsePuzzleInput "data/7" Day7.parse >>= output . Day7.solve
     8 -> parsePuzzleInput "data/8" Day8.parse >>= output . Day8.solve
+    9 -> parsePuzzleInput "data/9" Day9.parse >>= output . Day9.solve
     _ -> putStrLn "Day not implemented" >> exitFailure
  where
   output (p1, p2) = do

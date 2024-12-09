@@ -8,6 +8,7 @@ module Advent.Parse (
   linesP,
   gridP,
   intP,
+  digitP,
 ) where
 
 import Relude
@@ -44,6 +45,9 @@ gridP makeGrid tileP = do
 
 intP :: Parser Int
 intP = takeWhile1P (Just "digit") isDigit >>= mustRead
+
+digitP :: Parser Int
+digitP = digitChar >>= mustRead . one @String
 
 mustRead :: (MonadFail m, Read a, ToString i) => i -> m a
 mustRead input = maybe (fail "intP") pure $ readMaybe $ toString input

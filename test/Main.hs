@@ -13,6 +13,7 @@ import Advent.Problems.Day5 qualified as Day5
 import Advent.Problems.Day6 qualified as Day6
 import Advent.Problems.Day7 qualified as Day7
 import Advent.Problems.Day8 qualified as Day8
+import Advent.Problems.Day9 qualified as Day9
 
 main :: IO ()
 main = hspec $ do
@@ -25,6 +26,7 @@ main = hspec $ do
     day 6 (41, 6) Day6.parse Day6.solve
     day 7 (3749, 11387) Day7.parse Day7.solve
     day 8 (14, 34) Day8.parse Day8.solve
+    day 9 (1928, undefined) Day9.parse Day9.solve
  where
   day ::
     (Show part1, Show part2, Eq part1, Eq part2) =>
