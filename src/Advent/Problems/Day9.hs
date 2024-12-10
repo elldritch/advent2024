@@ -3,10 +3,10 @@ module Advent.Problems.Day9 (parse, solve) where
 import Relude
 import Relude.Extra (bimapBoth)
 
+import Data.Sequence (findIndexL, index)
 import Data.Sequence qualified as Seq
 
 import Advent.Parse (Parser, digitP, eof, manyTill, newline)
-import Data.Sequence (findIndexL, index)
 
 parse :: forall f. (Applicative f, Monoid (f Segment)) => Parser (f Segment)
 parse = go . zip [0 ..] <$> manyTill digitP (newline >> eof)
@@ -56,7 +56,20 @@ solve segments = bimapBoth checksum (blockCompacted, fileCompacted)
                 & (let remaining = s.length - l in if remaining > 0 then Seq.insertAt (i' + 1) (Segment Empty remaining) else id)
             else segments'
        where
+        -- TODO: To improve performance, avoid re-finding indexes for the
+        -- segment every time. Instead, there should be a way to store this and
+        -- update whenever a new empty segment is partially consumed. Or perhaps
+        -- we should be storing block addresses, or mapping which block
+        -- addresses are occupied by which segments?
         i = fromMaybe (error "impossible: segment is missing") $ findIndexL (== segment) segments'
+        -- TODO: To improve performance, avoid recalculating open spaces for
+        -- every segment. Instead, calculate all open spaces the first pass,
+        -- likely producing a map of open space size to the list of indexes
+        -- where those spaces start. Since new open spaces will never be created
+        -- (because the rightmost file is always moved first, and therefore new
+        -- open spaces will always be to the right of the next file being
+        -- moved), this map will never need to be added to (some spaces will
+        -- just need to be removed as they are used).
         leftmostSpace = find (\(_, s) -> case s of Segment Empty l' -> l' >= l; _ -> False) $ withIndex segments'
 
 checksum :: (Foldable t) => t Block -> Int

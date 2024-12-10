@@ -32,11 +32,20 @@ solve (tileMap, grid) =
   obstacles = fromList $ map fst $ filter ((== Obstacle) . snd) tiles
   start = fst $ fromMaybe (error "room has no guard") $ find ((== Guard) . snd) tiles
   route = snd $ visitedByGuard grid obstacles start North
+  -- TODO: To improve performance, only consider placing obstacles at locations
+  -- that could possibly result in a loop (i.e. they also have an obstacle to
+  -- their right).
   obstructedRoutes = (\pos -> visitedByGuard grid (Set.insert pos obstacles) start North) <$> toList route
 
 visitedByGuard :: RectSquareGrid -> Set (Index RectSquareGrid) -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid))
 visitedByGuard grid obstacles start direction = go (one (start, toOrd direction)) start direction
  where
+  -- TODO: To improve performance, avoid recursing in straight lines. Instead,
+  -- only do case analysis when an obstacle is reached. To do this, we need to
+  -- do some math on the grid coordinates, so we can't use `neighbour` on every
+  -- position anymore. Likely the needed data structures include something like
+  -- "obstacles by row" and "obstacles by column". The key is that there are
+  -- many more empty spaces than obstacles.
   go :: Set (Index RectSquareGrid, SquareDirection') -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid))
   go seen pos facing = case neighbour grid pos facing of
     Nothing -> (Exited, Set.map fst seen)
