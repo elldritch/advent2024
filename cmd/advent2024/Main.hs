@@ -6,6 +6,7 @@ import Options.Applicative (Parser, ParserInfo, auto, execParser, fullDesc, help
 
 import Advent.Parse (parsePuzzleInput)
 import Advent.Problems.Day1 qualified as Day1
+import Advent.Problems.Day10 qualified as Day10
 import Advent.Problems.Day2 qualified as Day2
 import Advent.Problems.Day3 qualified as Day3
 import Advent.Problems.Day4 qualified as Day4
@@ -27,6 +28,9 @@ main :: IO ()
 main = do
   opts <- execParser argparser
   case opts.day of
+    -- TODO: The runner can't be generic because the parse and solve function
+    -- types don't strictly unify. Is there a way I can use something like
+    -- impredicative types to fix this?
     1 -> parsePuzzleInput "data/1" Day1.parse >>= output . Day1.solve
     2 -> parsePuzzleInput "data/2" Day2.parse >>= output . Day2.solve
     3 -> parsePuzzleInput "data/3" Day3.parse >>= output . Day3.solve
@@ -36,6 +40,7 @@ main = do
     7 -> parsePuzzleInput "data/7" Day7.parse >>= output . Day7.solve
     8 -> parsePuzzleInput "data/8" Day8.parse >>= output . Day8.solve
     9 -> parsePuzzleInput "data/9" Day9.parse >>= output . Day9.solve
+    10 -> parsePuzzleInput "data/10" Day10.parse >>= output . Day10.solve
     _ -> putStrLn "Day not implemented" >> exitFailure
  where
   output (p1, p2) = do

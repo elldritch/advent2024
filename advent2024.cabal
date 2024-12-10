@@ -42,6 +42,7 @@ common relude
 library
   import:          options, base, relude
   build-depends:
+    , algebraic-graphs    ==0.7
     , containers          ==0.6.7
     , grid                ==7.8.15
     , megaparsec          ==9.7.0
@@ -54,6 +55,7 @@ library
     Advent.NonEmpty
     Advent.Parse
     Advent.Problems.Day1
+    Advent.Problems.Day10
     Advent.Problems.Day2
     Advent.Problems.Day3
     Advent.Problems.Day4
