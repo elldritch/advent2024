@@ -52,10 +52,12 @@ library
 
   -- cabal-fmt: expand src
   exposed-modules:
+    Advent.Math
     Advent.NonEmpty
     Advent.Parse
     Advent.Problems.Day1
     Advent.Problems.Day10
+    Advent.Problems.Day11
     Advent.Problems.Day2
     Advent.Problems.Day3
     Advent.Problems.Day4

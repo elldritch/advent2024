@@ -7,6 +7,7 @@ import Test.Hspec (SpecWith, beforeAll, describe, hspec, it, shouldBe)
 import Advent.Parse (Parser, parsePuzzleInput)
 import Advent.Problems.Day1 qualified as Day1
 import Advent.Problems.Day10 qualified as Day10
+import Advent.Problems.Day11 qualified as Day11
 import Advent.Problems.Day2 qualified as Day2
 import Advent.Problems.Day3 qualified as Day3
 import Advent.Problems.Day4 qualified as Day4
@@ -29,6 +30,7 @@ main = hspec $ do
     day 8 (14, 34) Day8.parse Day8.solve
     day 9 (1928, 2858) Day9.parse Day9.solve
     day 10 (36, 81) Day10.parse Day10.solve
+    day 11 (55312, undefined) Day11.parse Day11.solve
  where
   day ::
     (Show part1, Show part2, Eq part1, Eq part2) =>

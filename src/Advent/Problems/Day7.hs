@@ -2,6 +2,7 @@ module Advent.Problems.Day7 (parse, solve) where
 
 import Relude
 
+import Advent.Math (digits)
 import Advent.Parse (Parser, char, intP, linesP, sepBy1, string)
 
 parse :: Parser [(Int, NonEmpty Int)]
@@ -22,7 +23,7 @@ satisfiable' :: Int -> NonEmpty Int -> Bool
 satisfiable' = satisfiableWith [(+), (*), digitConcat]
  where
   digitConcat :: Int -> Int -> Int
-  digitConcat x y = x * 10 ^ (floor @Double @Int (logBase 10 (fromIntegral y)) + 1) + y
+  digitConcat x y = x * 10 ^ digits @Int y + y
 
 satisfiableWith :: [Int -> Int -> Int] -> Int -> NonEmpty Int -> Bool
 satisfiableWith fs target operands = elem target $ go (head operands) $ tail operands
