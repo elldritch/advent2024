@@ -30,7 +30,7 @@ main = hspec $ do
     day 8 (14, 34) Day8.parse Day8.solve
     day 9 (1928, 2858) Day9.parse Day9.solve
     day 10 (36, 81) Day10.parse Day10.solve
-    day 11 (55312, undefined) Day11.parse Day11.solve
+    day' 11 (55312, Nothing) Day11.parse Day11.solve
  where
   day ::
     (Show part1, Show part2, Eq part1, Eq part2) =>
@@ -39,8 +39,19 @@ main = hspec $ do
     Parser input ->
     (input -> (part1, part2)) ->
     SpecWith ()
-  day n (expected1, expected2) parse solve =
+  day n (expected1, expected2) = day' n (expected1, Just expected2)
+
+  day' ::
+    (Show part1, Show part2, Eq part1, Eq part2) =>
+    Int ->
+    (part1, Maybe part2) ->
+    Parser input ->
+    (input -> (part1, part2)) ->
+    SpecWith ()
+  day' n (expected1, expected2) parse solve =
     beforeAll (liftIO $ parsePuzzleInput ("test/examples/" <> show n) parse) $
       describe ("Day " <> show n) $ do
         it "Part 1" $ \input -> fst (solve input) `shouldBe` expected1
-        it "Part 2" $ \input -> snd (solve input) `shouldBe` expected2
+        case expected2 of
+          Just e2 -> it "Part 2" $ \input -> snd (solve input) `shouldBe` e2
+          Nothing -> pass
