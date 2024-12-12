@@ -18,7 +18,7 @@ solve :: (Map (Int, Int) Int, RectSquareGrid) -> (Int, Int)
 solve (heights, grid) = bimapBoth sum (score <$> trailheads, rating <$> trailheads)
  where
   positions = indices grid
-  height p = fromMaybe (error "impossible: position has no height") $ lookup p heights
+  height p = fromMaybe (error "position has no height") $ lookup p heights
   slopeGraph = edges $ concatMap (concatMap gradualInclines . neighbours grid) positions
    where
     gradualInclines pos = mapMaybe (\pos' -> if height pos' == height pos + 1 then Just (pos, pos') else Nothing) $ neighbours grid pos
@@ -46,7 +46,7 @@ solve (heights, grid) = bimapBoth sum (score <$> trailheads, rating <$> trailhea
   rating pos = fromMaybe 0 $ Map.lookup pos ratings
    where
     topSorted :: [(Int, Int)]
-    topSorted = fromRight (error "impossible: graph is cyclic") $ topSort slopeGraph
+    topSorted = fromRight (error "graph is cyclic") $ topSort slopeGraph
 
     ratings :: Map (Int, Int) Int
     ratings = foldr pathsTo mempty topSorted
@@ -54,4 +54,4 @@ solve (heights, grid) = bimapBoth sum (score <$> trailheads, rating <$> trailhea
       pathsTo :: (Int, Int) -> Map (Int, Int) Int -> Map (Int, Int) Int
       pathsTo pos' m
         | height pos' == 9 = Map.insert pos' 1 m
-        | otherwise = Map.insert pos' (sum $ fromMaybe (error "impossible: position is not on a trail") . flip lookup m <$> toList (postSet pos' slopeGraph)) m
+        | otherwise = Map.insert pos' (sum $ fromMaybe (error "position is not on a trail") . flip lookup m <$> toList (postSet pos' slopeGraph)) m

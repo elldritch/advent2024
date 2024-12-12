@@ -61,7 +61,7 @@ solve segments = bimapBoth checksum (blockCompacted, fileCompacted)
         -- update whenever a new empty segment is partially consumed. Or perhaps
         -- we should be storing block addresses, or mapping which block
         -- addresses are occupied by which segments?
-        i = fromMaybe (error "impossible: segment is missing") $ findIndexL (== segment) segments'
+        i = fromMaybe (error "segment is missing") $ findIndexL (== segment) segments'
         -- TODO: To improve performance, avoid recalculating open spaces for
         -- every segment. Instead, calculate all open spaces the first pass,
         -- likely producing a map of open space size to the list of indexes

@@ -18,7 +18,7 @@ solve initial = (stoneCountAfter 25 initial, stoneCountAfter 75 initial)
     sum
       . elems
       . head
-      . fromMaybe (error "impossible: stone iteration is finite")
+      . fromMaybe (error "stone iteration is finite")
       . nonEmpty
       . drop i
       . iterate blink'
