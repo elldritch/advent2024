@@ -11,6 +11,7 @@ import Advent.Parse (readPuzzleInput, runPuzzle)
 import Advent.Problems.Day1 qualified as Day1
 import Advent.Problems.Day10 qualified as Day10
 import Advent.Problems.Day11 qualified as Day11
+import Advent.Problems.Day12 qualified as Day12
 import Advent.Problems.Day2 qualified as Day2
 import Advent.Problems.Day3 qualified as Day3
 import Advent.Problems.Day4 qualified as Day4
@@ -66,4 +67,5 @@ main = do
       , runPuzzle Day9.parse Day9.solve
       , runPuzzle Day10.parse Day10.solve
       , runPuzzle Day11.parse Day11.solve
+      , runPuzzle Day12.parse Day12.solve
       ]
