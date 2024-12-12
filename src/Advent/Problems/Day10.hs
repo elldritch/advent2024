@@ -26,6 +26,22 @@ solve (heights, grid) = bimapBoth sum (score <$> trailheads, rating <$> trailhea
 
   score = length . filter ((== 9) . height) . reachable slopeGraph
 
+  -- FIXME: For some reason, this takes about a minute normally (under O1 and
+  -- O2) and takes forever on O0, but takes only 0.1 seconds if you turn on
+  -- profiling!
+  --
+  -- After further testing, the full set of combinations is:
+  --
+  -- - O0, profiling off: doesn't finish
+  -- - O0, profiling on: doesn't finish
+  -- - O1, profiling off: ~1 minute
+  -- - O1, profiling on: ~0.1 seconds
+  -- - O2, profiling off: ~1 minute
+  -- - O2, profiling on: ~0.1 seconds
+  --
+  -- This is extremely strange, especially since all the other solutions take
+  -- about 2x to 3x as long when profiling is on. It seems impossible, but @cnr
+  -- and I have both reproduced it.
   rating :: (Int, Int) -> Int
   rating pos = fromMaybe 0 $ Map.lookup pos ratings
    where
