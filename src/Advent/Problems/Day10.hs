@@ -4,7 +4,8 @@ import Relude
 import Relude.Extra (bimapBoth, lookup)
 
 import Algebra.Graph (edges)
-import Algebra.Graph.ToGraph (postSet, reachable)
+import Algebra.Graph.ToGraph (postSet, reachable, topSort)
+import Data.Map.Strict qualified as Map
 import Math.Geometry.Grid (indices, neighbours)
 import Math.Geometry.Grid.Square (RectSquareGrid, rectSquareGrid)
 
@@ -25,8 +26,16 @@ solve (heights, grid) = bimapBoth sum (score <$> trailheads, rating <$> trailhea
 
   score = length . filter ((== 9) . height) . reachable slopeGraph
 
-  -- TODO: This basically brute-forces the paths. To improve performance, do a
-  -- topsort and track the number of paths through each node.
-  rating = pathsToPeak
+  rating :: (Int, Int) -> Int
+  rating pos = fromMaybe 0 $ Map.lookup pos ratings
    where
-    pathsToPeak pos = if height pos == 9 then 1 else sum $ fmap pathsToPeak $ toList $ postSet pos slopeGraph
+    topSorted :: [(Int, Int)]
+    topSorted = fromRight (error "impossible: graph is cyclic") $ topSort slopeGraph
+
+    ratings :: Map (Int, Int) Int
+    ratings = foldr pathsTo mempty topSorted
+     where
+      pathsTo :: (Int, Int) -> Map (Int, Int) Int -> Map (Int, Int) Int
+      pathsTo pos' m
+        | height pos' == 9 = Map.insert pos' 1 m
+        | otherwise = Map.insert pos' (sum $ fromMaybe (error "impossible: position is not on a trail") . flip lookup m <$> toList (postSet pos' slopeGraph)) m
