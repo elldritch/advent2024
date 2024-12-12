@@ -73,6 +73,7 @@ executable advent2024
   build-depends:
     , advent2024
     , optparse-applicative  ==0.18.1.0
+    , time                  ==1.12.2
 
   hs-source-dirs: cmd/advent2024
   main-is:        Main.hs

@@ -1,10 +1,13 @@
 module Main (main) where
 
 import Relude
+import Relude.Extra (lookup, toPairs)
 
-import Options.Applicative (Parser, ParserInfo, auto, execParser, fullDesc, help, helper, info, long, metavar, option, progDesc, short)
+import Data.Time (diffUTCTime, getCurrentTime)
+import Options.Applicative (auto, execParser, fullDesc, help, helper, info, long, metavar, option, progDesc, short)
+import Options.Applicative qualified as Arg (Parser, ParserInfo)
 
-import Advent.Parse (parsePuzzleInput)
+import Advent.Parse (readPuzzleInput, runPuzzle)
 import Advent.Problems.Day1 qualified as Day1
 import Advent.Problems.Day10 qualified as Day10
 import Advent.Problems.Day11 qualified as Day11
@@ -17,34 +20,50 @@ import Advent.Problems.Day7 qualified as Day7
 import Advent.Problems.Day8 qualified as Day8
 import Advent.Problems.Day9 qualified as Day9
 
-newtype Argv = Argv {day :: Int}
+newtype Argv = Argv {day :: Maybe Int}
 
-argvP :: Parser Argv
-argvP = Argv <$> option auto (long "day" <> short 'd' <> metavar "DAY" <> help "Day to run")
+argvP :: Arg.Parser Argv
+argvP = Argv <$> optional (option auto (long "day" <> short 'd' <> metavar "DAY" <> help "Day to run"))
 
-argparser :: ParserInfo Argv
+argparser :: Arg.ParserInfo Argv
 argparser = info (argvP <**> helper) (fullDesc <> progDesc "Advent of Code 2024")
 
 main :: IO ()
 main = do
   opts <- execParser argparser
+  hSetBuffering stdout LineBuffering
   case opts.day of
-    -- TODO: The runner can't be generic because the parse and solve function
-    -- types don't strictly unify. Is there a way I can use something like
-    -- impredicative types to fix this?
-    1 -> parsePuzzleInput "data/1" Day1.parse >>= output . Day1.solve
-    2 -> parsePuzzleInput "data/2" Day2.parse >>= output . Day2.solve
-    3 -> parsePuzzleInput "data/3" Day3.parse >>= output . Day3.solve
-    4 -> parsePuzzleInput "data/4" Day4.parse >>= output . Day4.solve
-    5 -> parsePuzzleInput "data/5" Day5.parse >>= output . Day5.solve
-    6 -> parsePuzzleInput "data/6" Day6.parse >>= output . Day6.solve
-    7 -> parsePuzzleInput "data/7" Day7.parse >>= output . Day7.solve
-    8 -> parsePuzzleInput "data/8" Day8.parse >>= output . Day8.solve
-    9 -> parsePuzzleInput "data/9" Day9.parse >>= output . Day9.solve
-    10 -> parsePuzzleInput "data/10" Day10.parse >>= output . Day10.solve
-    11 -> parsePuzzleInput "data/11" Day11.parse >>= output . Day11.solve
-    _ -> putStrLn "Day not implemented" >> exitFailure
+    Just n -> maybe (putStrLn "Day not implemented") (run n) $ lookup n solutions
+    Nothing -> traverse_ (uncurry run) $ toPairs solutions
  where
-  output (p1, p2) = do
-    putStrLn $ "Part 1: " <> show p1
-    putStrLn $ "Part 2: " <> show p2
+  run :: Int -> (Text -> Either String (Int, Int)) -> IO ()
+  run n f = do
+    input <- readPuzzleInput ("data/" <> show n)
+    let (p1, p2) = either (error . toText) id $ f input
+    putStrLn $ "Day " <> show n
+    timed $ "  Part 1: " <> show p1
+    timed $ "  Part 2: " <> show p2
+    putStrLn ""
+   where
+    timed s = do
+      start <- getCurrentTime
+      putStr s
+      end <- getCurrentTime
+      putStrLn $ " (" <> show (diffUTCTime end start) <> ")"
+
+  solutions :: Map Int (Text -> Either String (Int, Int))
+  solutions = fromList $ zip [1 ..] days
+   where
+    days =
+      [ runPuzzle Day1.parse Day1.solve
+      , runPuzzle Day2.parse Day2.solve
+      , runPuzzle Day3.parse Day3.solve
+      , runPuzzle Day4.parse Day4.solve
+      , runPuzzle Day5.parse Day5.solve
+      , runPuzzle Day6.parse Day6.solve
+      , runPuzzle Day7.parse Day7.solve
+      , runPuzzle Day8.parse Day8.solve
+      , runPuzzle Day9.parse Day9.solve
+      , runPuzzle Day10.parse Day10.solve
+      , runPuzzle Day11.parse Day11.solve
+      ]

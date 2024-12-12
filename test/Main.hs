@@ -4,7 +4,7 @@ import Relude
 
 import Test.Hspec (SpecWith, beforeAll, describe, hspec, it, shouldBe)
 
-import Advent.Parse (Parser, parsePuzzleInput)
+import Advent.Parse (Parser, readPuzzleInput, runPuzzle)
 import Advent.Problems.Day1 qualified as Day1
 import Advent.Problems.Day10 qualified as Day10
 import Advent.Problems.Day11 qualified as Day11
@@ -49,9 +49,10 @@ main = hspec $ do
     (input -> (part1, part2)) ->
     SpecWith ()
   day' n (expected1, expected2) parse solve =
-    beforeAll (liftIO $ parsePuzzleInput ("test/examples/" <> show n) parse) $
+    beforeAll (liftIO $ readPuzzleInput ("test/examples/" <> show n)) $
       describe ("Day " <> show n) $ do
-        it "Part 1" $ \input -> fst (solve input) `shouldBe` expected1
+        let run = either (error . toText) id . runPuzzle parse solve
+        it "Part 1" $ \input -> fst (run input) `shouldBe` expected1
         case expected2 of
-          Just e2 -> it "Part 2" $ \input -> snd (solve input) `shouldBe` e2
+          Just e2 -> it "Part 2" $ \input -> snd (run input) `shouldBe` e2
           Nothing -> pass

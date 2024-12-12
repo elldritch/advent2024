@@ -4,7 +4,8 @@ module Advent.Parse (
   module Text.Megaparsec.Char,
   module Text.Megaparsec.Debug,
   module Control.Monad.Combinators.NonEmpty,
-  parsePuzzleInput,
+  runPuzzle,
+  readPuzzleInput,
   linesP,
   gridP,
   intP,
@@ -24,10 +25,11 @@ import Advent.NonEmpty qualified as NE
 
 type Parser = Parsec Void Text
 
-parsePuzzleInput :: FilePath -> Parser a -> IO a
-parsePuzzleInput fp p = readFileText' fp >>= either (error . toText . errorBundlePretty) pure . runParser p fp
- where
-  readFileText' = fmap decodeUtf8 . readFileBS
+runPuzzle :: Parser a -> (a -> (b1, b2)) -> Text -> Either String (b1, b2)
+runPuzzle p f = bimap errorBundlePretty f . runParser p ""
+
+readPuzzleInput :: FilePath -> IO Text
+readPuzzleInput = fmap decodeUtf8 . readFileBS
 
 linesP :: Parser a -> Parser [a]
 linesP lineP = manyTill (lineP <* newline) eof
@@ -50,4 +52,4 @@ digitP :: Parser Int
 digitP = digitChar >>= mustRead . one @String
 
 mustRead :: (MonadFail m, Read a, ToString i) => i -> m a
-mustRead input = maybe (fail "intP") pure $ readMaybe $ toString input
+mustRead input = maybe (fail "could not read value") pure $ readMaybe $ toString input
