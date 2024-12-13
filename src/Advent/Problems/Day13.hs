@@ -1,6 +1,7 @@
 module Advent.Problems.Day13 (parse, solve) where
 
 import Relude
+import Relude.Extra (bimapBoth)
 
 import GHC.Real ((%))
 
@@ -28,14 +29,14 @@ parse = sepBy clawMachineP newline <* eof
   prizeP = (,) <$> (string "Prize: X=" *> ratP) <* string ", Y=" <*> ratP <* newline
 
 solve :: [ClawMachine] -> (Int, Int)
-solve machines =
-  ( sum $ cost . solveMachine <$> machines
-  , undefined
-  )
+solve machines = bimapBoth (sum . fmap cost . (`fmap` machines)) (play, play')
  where
-  solveMachine ClawMachine{a, b, prize} =
-    ( (fst prize - (snd prize - fst prize * a.dy / a.dx) / (b.dy - b.dx * a.dy / a.dx) * b.dx) / a.dx
-    , (snd prize - fst prize * a.dy / a.dx) / (b.dy - b.dx * a.dy / a.dx)
+  play ClawMachine{a, b, prize} = solveMachine a b prize
+  play' ClawMachine{a, b, prize} = solveMachine a b $ bimapBoth (+ 10000000000000) prize
+
+  solveMachine a b (prizeX, prizeY) =
+    ( (prizeX - (prizeY - prizeX * a.dy / a.dx) / (b.dy - b.dx * a.dy / a.dx) * b.dx) / a.dx
+    , (prizeY - prizeX * a.dy / a.dx) / (b.dy - b.dx * a.dy / a.dx)
     )
 
   cost :: (Rational, Rational) -> Int
