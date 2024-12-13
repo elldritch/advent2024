@@ -1,6 +1,6 @@
 {
   "files.associations": {
-    "../data": "plaintext",
-    "../test/examples": "plaintext"
+    "../data/**/*": "plaintext",
+    "../test/examples/**/*": "plaintext"
   }
 }
