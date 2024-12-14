@@ -4,7 +4,7 @@ import Relude
 import Relude.Extra (bimapBoth, lookup)
 
 import Algebra.Graph (edges)
-import Algebra.Graph.ToGraph (postSet, reachable, topSort)
+import Algebra.Graph.ToGraph (postSet, reachable, toAdjacencyMap, topSort)
 import Data.Map.Strict qualified as Map
 import Math.Geometry.Grid (indices, neighbours)
 import Math.Geometry.Grid.Square (RectSquareGrid, rectSquareGrid)
@@ -26,27 +26,14 @@ solve (heights, grid) = bimapBoth sum (score <$> trailheads, rating <$> trailhea
 
   score = length . filter ((== 9) . height) . reachable slopeGraph
 
-  -- FIXME: For some reason, this takes about a minute normally (under O1 and
-  -- O2) and takes forever on O0, but takes only 0.1 seconds if you turn on
-  -- profiling!
-  --
-  -- After further testing, the full set of combinations is:
-  --
-  -- - O0, profiling off: doesn't finish
-  -- - O0, profiling on: doesn't finish
-  -- - O1, profiling off: ~1 minute
-  -- - O1, profiling on: ~0.1 seconds
-  -- - O2, profiling off: ~1 minute
-  -- - O2, profiling on: ~0.1 seconds
-  --
-  -- This is extremely strange, especially since all the other solutions take
-  -- about 2x to 3x as long when profiling is on. It seems impossible, but @cnr
-  -- and I have both reproduced it.
   rating :: (Int, Int) -> Int
   rating pos = fromMaybe 0 $ Map.lookup pos ratings
    where
+    -- https://gitlab.haskell.org/ghc/ghc/-/issues/25573#note_599887
+    adj = toAdjacencyMap slopeGraph
+
     topSorted :: [(Int, Int)]
-    topSorted = fromRight (error "graph is cyclic") $ topSort slopeGraph
+    topSorted = fromRight (error "graph is cyclic") $ topSort adj
 
     ratings :: Map (Int, Int) Int
     ratings = foldr pathsTo mempty topSorted
@@ -54,4 +41,4 @@ solve (heights, grid) = bimapBoth sum (score <$> trailheads, rating <$> trailhea
       pathsTo :: (Int, Int) -> Map (Int, Int) Int -> Map (Int, Int) Int
       pathsTo pos' m
         | height pos' == 9 = Map.insert pos' 1 m
-        | otherwise = Map.insert pos' (sum $ fromMaybe (error "position is not on a trail") . flip lookup m <$> toList (postSet pos' slopeGraph)) m
+        | otherwise = Map.insert pos' (sum $ fromMaybe (error "position is not on a trail") . flip lookup m <$> toList (postSet pos' adj)) m
