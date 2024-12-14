@@ -1,10 +1,13 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
+
 module Advent.Problems.Day6 (parse, solve) where
 
 import Relude
-import Relude.Extra (member, toPairs)
+import Relude.Extra (lookup, member, toPairs)
 
+import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
-import Math.Geometry.Grid (Index, neighbour)
+import Math.Geometry.Grid (Index, contains)
 import Math.Geometry.Grid.Square (RectSquareGrid, rectSquareGrid)
 import Math.Geometry.Grid.SquareInternal (SquareDirection (..))
 
@@ -24,7 +27,7 @@ data GuardOutcome = Exited | Looping
 
 solve :: (Map (Index RectSquareGrid) Tile, RectSquareGrid) -> (Int, Int)
 solve (tileMap, grid) =
-  ( length route
+  ( length $ Set.map fst route
   , length $ filter ((== Looping) . fst) obstructedRoutes
   )
  where
@@ -32,39 +35,75 @@ solve (tileMap, grid) =
   obstacles = fromList $ map fst $ filter ((== Obstacle) . snd) tiles
   start = fst $ fromMaybe (error "room has no guard") $ find ((== Guard) . snd) tiles
   route = snd $ visitedByGuard grid obstacles start North
-  -- TODO: To improve performance, only consider placing obstacles at locations
-  -- that could possibly result in a loop (i.e. they also have an obstacle to
-  -- their right).
-  obstructedRoutes = (\pos -> visitedByGuard grid (Set.insert pos obstacles) start North) <$> toList route
+  obstructedRoutes =
+    fmap (\pos -> visitedByGuard grid (Set.insert pos obstacles) start North)
+      . Set.elems
+      . Set.map fst
+      $ Set.filter (obstacleMightLoop obstacles) route
 
-visitedByGuard :: RectSquareGrid -> Set (Index RectSquareGrid) -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid))
-visitedByGuard grid obstacles start direction = go (one (start, toOrd direction)) start direction
+visitedByGuard :: RectSquareGrid -> Set (Index RectSquareGrid) -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid, SquareDirection))
+visitedByGuard grid obstacles = go mempty
  where
-  -- TODO: To improve performance, avoid recursing in straight lines. Instead,
-  -- only do case analysis when an obstacle is reached. To do this, we need to
-  -- do some math on the grid coordinates, so we can't use `neighbour` on every
-  -- position anymore. Likely the needed data structures include something like
-  -- "obstacles by row" and "obstacles by column". The key is that there are
-  -- many more empty spaces than obstacles.
-  go :: Set (Index RectSquareGrid, SquareDirection') -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid))
-  go seen pos facing = case neighbour grid pos facing of
-    Nothing -> (Exited, Set.map fst seen)
-    Just pos' ->
-      if member pos' obstacles
-        then let facing' = turnRight facing in go (Set.insert (pos, toOrd facing') seen) pos facing'
-        else if member (pos', toOrd facing) seen then (Looping, Set.map fst seen) else go (Set.insert (pos', toOrd facing) seen) pos' facing
+  obstaclesByX = Map.fromListWith (<>) $ second Set.singleton <$> Set.elems obstacles
+  obstaclesByY = Map.fromListWith (<>) $ second Set.singleton . swap <$> Set.elems obstacles
 
-  turnRight :: SquareDirection -> SquareDirection
-  turnRight North = East
-  turnRight East = South
-  turnRight South = West
-  turnRight West = North
+  go :: Set (Index RectSquareGrid, SquareDirection) -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid, SquareDirection))
+  go seen (x, y) facing = case nextStop of
+    Nothing -> (Exited, seen <> see (pathToExit facing))
+    Just ((x', y'), pathToObstacle) ->
+      if member ((x', y'), facing) seen
+        then (Looping, seen)
+        else let facing' = turnRight facing in go (Set.insert ((x', y'), facing) seen <> see pathToObstacle) (x', y') facing'
+   where
+    see = Set.fromList . fmap (,facing)
 
-  toOrd :: SquareDirection -> SquareDirection'
-  toOrd North = North'
-  toOrd East = East'
-  toOrd South = South'
-  toOrd West = West'
+    pathToExit dir = takeWhile (grid `contains`) $ case dir of
+      North -> [(x, y + i) | i <- [1 ..]]
+      South -> [(x, y - i) | i <- [1 ..]]
+      West -> [(x - i, y) | i <- [1 ..]]
+      East -> [(x + i, y) | i <- [1 ..]]
+
+    nextStop = case facing of
+      North -> (\y' -> ((x, y' - 1), [(x, yi) | yi <- [y .. y' - 1]])) <$> Set.lookupGT y col
+      South -> (\y' -> ((x, y' + 1), [(x, yi) | yi <- [y' + 1 .. y]])) <$> Set.lookupLT y col
+      West -> (\x' -> ((x' + 1, y), [(xi, y) | xi <- [x' + 1 .. x]])) <$> Set.lookupLT x row
+      East -> (\x' -> ((x' - 1, y), [(xi, y) | xi <- [x .. x' - 1]])) <$> Set.lookupGT x row
+     where
+      col = fromMaybe mempty $ lookup x obstaclesByX
+      row = fromMaybe mempty $ lookup y obstaclesByY
+
+turnRight :: SquareDirection -> SquareDirection
+turnRight North = East
+turnRight East = South
+turnRight South = West
+turnRight West = North
 
 data SquareDirection' = North' | East' | South' | West'
   deriving stock (Show, Eq, Ord)
+
+instance Ord SquareDirection where
+  compare a b = compare (toOrd a) (toOrd b)
+   where
+    toOrd :: SquareDirection -> SquareDirection'
+    toOrd North = North'
+    toOrd East = East'
+    toOrd South = South'
+    toOrd West = West'
+
+-- TODO: Can we make this _even faster_? Some thoughts:
+--
+-- - Is there a condition that allows us to do a simple check for looping? For
+--   example, is "the next turned corner is on the old route" sufficient for us
+--   to determine a loop? Is it necessary for a loop?
+-- - Instead of trying each position on the old route, can we efficiently
+--   compute potential looping obstacles from the obstacle layout, and intersect
+--   those with the route?
+obstacleMightLoop :: Set (Index RectSquareGrid) -> (Index RectSquareGrid, SquareDirection) -> Bool
+obstacleMightLoop obstacles ((x, y), facing) = fromMaybe False $ case facing of
+  North -> lookup (y - 1) obstaclesByY >>= (fmap (const True) . Set.lookupGT x)
+  East -> lookup (x - 1) obstaclesByX >>= (fmap (const True) . Set.lookupLT y)
+  South -> lookup (y + 1) obstaclesByY >>= (fmap (const True) . Set.lookupLT x)
+  West -> lookup (x + 1) obstaclesByX >>= (fmap (const True) . Set.lookupGT y)
+ where
+  obstaclesByX = Map.fromListWith (<>) $ second Set.singleton <$> Set.elems obstacles
+  obstaclesByY = Map.fromListWith (<>) $ second Set.singleton . swap <$> Set.elems obstacles
