@@ -30,4 +30,5 @@ satisfiableWith fs target operands = elem target $ go (head operands) $ tail ope
  where
   go :: Int -> [Int] -> [Int]
   go acc [] = [acc]
+  go acc _ | acc > target = []
   go acc (op : ops) = concatMap (\f -> go (f acc op) ops) fs
