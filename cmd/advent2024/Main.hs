@@ -1,3 +1,5 @@
+{-# LANGUAGE ImpredicativeTypes #-}
+
 module Main (main) where
 
 import Relude
@@ -39,13 +41,13 @@ main = do
     Just n -> maybe (putStrLn "Day not implemented") (run n) $ lookup n solutions
     Nothing -> traverse_ (uncurry run) $ toPairs solutions
  where
-  run :: Int -> (Text -> Either String (Int, Int)) -> IO ()
+  run :: Int -> (Text -> Either String (String, String)) -> IO ()
   run n f = do
     input <- readPuzzleInput ("data/" <> show n)
     let (p1, p2) = either (error . toText) id $ f input
     putStrLn $ "Day " <> show n
-    timed $ "  Part 1: " <> show p1
-    timed $ "  Part 2: " <> show p2
+    timed $ "  Part 1: " <> p1
+    timed $ "  Part 2: " <> p2
     putStrLn ""
    where
     timed s = do
@@ -54,22 +56,24 @@ main = do
       end <- getCurrentTime
       putStrLn $ " (" <> show (diffUTCTime end start) <> ")"
 
-  solutions :: Map Int (Text -> Either String (Int, Int))
+  solutions :: Map Int (Text -> Either String (String, String))
   solutions = fromList $ zip [1 ..] days
    where
+    runPuzzle' = runPuzzleWith show show
+    runPuzzleWith f g p s i = bimap f g <$> runPuzzle p s i
     days =
-      [ runPuzzle Day1.parse Day1.solve
-      , runPuzzle Day2.parse Day2.solve
-      , runPuzzle Day3.parse Day3.solve
-      , runPuzzle Day4.parse Day4.solve
-      , runPuzzle Day5.parse Day5.solve
-      , runPuzzle Day6.parse Day6.solve
-      , runPuzzle Day7.parse Day7.solve
-      , runPuzzle Day8.parse Day8.solve
-      , runPuzzle Day9.parse Day9.solve
-      , runPuzzle Day10.parse Day10.solve
-      , runPuzzle Day11.parse Day11.solve
-      , runPuzzle Day12.parse Day12.solve
-      , runPuzzle Day13.parse Day13.solve
-      , runPuzzle Day14.parse Day14.solve
+      [ runPuzzle' Day1.parse Day1.solve
+      , runPuzzle' Day2.parse Day2.solve
+      , runPuzzle' Day3.parse Day3.solve
+      , runPuzzle' Day4.parse Day4.solve
+      , runPuzzle' Day5.parse Day5.solve
+      , runPuzzle' Day6.parse Day6.solve
+      , runPuzzle' Day7.parse Day7.solve
+      , runPuzzle' Day8.parse Day8.solve
+      , runPuzzle' Day9.parse Day9.solve
+      , runPuzzle' Day10.parse Day10.solve
+      , runPuzzle' Day11.parse Day11.solve
+      , runPuzzle' Day12.parse Day12.solve
+      , runPuzzle' Day13.parse Day13.solve
+      , runPuzzleWith show id Day14.parse Day14.solve
       ]

@@ -36,7 +36,7 @@ main = hspec $ do
     day' 11 (55312, Nothing) Day11.parse Day11.solve
     day 12 (1930, 1206) Day12.parse Day12.solve
     day' 13 (480, Nothing) Day13.parse Day13.solve
-    day 14 (12, undefined) Day14.parse (Day14.solve' (11, 7))
+    day' 14 (12, Nothing) Day14.parse (Day14.solve' (11, 7))
  where
   day ::
     (Show part1, Show part2, Eq part1, Eq part2) =>
