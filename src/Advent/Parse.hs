@@ -46,7 +46,7 @@ gridP makeGrid tileP = do
   pure (fromList $ toList tiles'', grid)
 
 intP :: Parser Int
-intP = takeWhile1P (Just "digit") isDigit >>= mustRead
+intP = (fromMaybe id <$> optional (char '-' $> negate)) <*> (takeWhile1P (Just "digit") isDigit >>= mustRead)
 
 digitP :: Parser Int
 digitP = digitChar >>= mustRead . one @String
