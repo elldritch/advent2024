@@ -1,11 +1,10 @@
 module Advent.Problems.Day10 (parse, solve) where
 
 import Relude
-import Relude.Extra (bimapBoth, lookup)
+import Relude.Extra (bimapBoth, insert, (!?))
 
 import Algebra.Graph (edges)
 import Algebra.Graph.ToGraph (postSet, reachable, toAdjacencyMap, topSort)
-import Data.Map.Strict qualified as Map
 import Math.Geometry.Grid (indices, neighbours)
 import Math.Geometry.Grid.Square (RectSquareGrid, rectSquareGrid)
 
@@ -18,7 +17,7 @@ solve :: (Map (Int, Int) Int, RectSquareGrid) -> (Int, Int)
 solve (heights, grid) = bimapBoth sum (score <$> trailheads, rating <$> trailheads)
  where
   positions = indices grid
-  height p = fromMaybe (error "position has no height") $ lookup p heights
+  height p = fromMaybe (error "position has no height") $ heights !? p
   slopeGraph = edges $ concatMap (concatMap gradualInclines . neighbours grid) positions
    where
     gradualInclines pos = mapMaybe (\pos' -> if height pos' == height pos + 1 then Just (pos, pos') else Nothing) $ neighbours grid pos
@@ -27,7 +26,7 @@ solve (heights, grid) = bimapBoth sum (score <$> trailheads, rating <$> trailhea
   score = length . filter ((== 9) . height) . reachable slopeGraph
 
   rating :: (Int, Int) -> Int
-  rating pos = fromMaybe 0 $ Map.lookup pos ratings
+  rating pos = fromMaybe 0 $ ratings !? pos
    where
     -- https://gitlab.haskell.org/ghc/ghc/-/issues/25573#note_599887
     adj = toAdjacencyMap slopeGraph
@@ -40,5 +39,5 @@ solve (heights, grid) = bimapBoth sum (score <$> trailheads, rating <$> trailhea
      where
       pathsTo :: (Int, Int) -> Map (Int, Int) Int -> Map (Int, Int) Int
       pathsTo pos' m
-        | height pos' == 9 = Map.insert pos' 1 m
-        | otherwise = Map.insert pos' (sum $ fromMaybe (error "position is not on a trail") . flip lookup m <$> toList (postSet pos' adj)) m
+        | height pos' == 9 = insert pos' 1 m
+        | otherwise = insert pos' (sum $ fromMaybe (error "position is not on a trail") . (m !?) <$> toList (postSet pos' adj)) m

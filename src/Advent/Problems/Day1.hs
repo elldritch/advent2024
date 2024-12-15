@@ -1,6 +1,7 @@
 module Advent.Problems.Day1 (parse, solve) where
 
 import Relude
+import Relude.Extra ((!?))
 
 import Data.Map.Strict qualified as Map
 
@@ -16,4 +17,4 @@ solve (xs, ys) =
   )
  where
   counts = Map.fromListWith (+) $ (,1) <$> ys
-  similarities = (\x -> x * fromMaybe 0 (Map.lookup x counts)) <$> xs
+  similarities = (\x -> x * fromMaybe 0 (counts !? x)) <$> xs

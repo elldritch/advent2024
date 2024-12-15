@@ -1,7 +1,7 @@
 module Advent.Problems.Day5 (parse, solve) where
 
 import Relude
-import Relude.Extra (lookup, member)
+import Relude.Extra (member, (!?))
 import Relude.Unsafe ((!!))
 
 import Data.List (partition)
@@ -30,7 +30,7 @@ updateIsOrdered rules pages = snd $ foldl' checkPage (mempty, True) pages
   checkPage :: (Set Int, Bool) -> Int -> (Set Int, Bool)
   checkPage (seen, ok) page = (Set.insert page seen, Set.intersection seen afters == mempty && ok)
    where
-    afters = fromMaybe mempty $ lookup page rulesMap
+    afters = fromMaybe mempty $ rulesMap !? page
 
 fixUpdate :: [(Int, Int)] -> [Int] -> [Int]
 fixUpdate rules pages = sortBy compareByRules pages
@@ -40,11 +40,11 @@ fixUpdate rules pages = sortBy compareByRules pages
   compareByRules :: Int -> Int -> Ordering
   compareByRules x y =
     fromMaybe EQ $
-      (lookup x rulesMap >>= (\afterX -> if y `member` afterX then Just LT else Nothing))
-        <|> (lookup y rulesMap >>= (\afterY -> if x `member` afterY then Just GT else Nothing))
+      (rulesMap !? x >>= (\afterX -> if y `member` afterX then Just LT else Nothing))
+        <|> (rulesMap !? y >>= (\afterY -> if x `member` afterY then Just GT else Nothing))
 
 makeRulesMap :: [(Int, Int)] -> [Int] -> Map Int (Set Int)
-makeRulesMap rules pages = Map.fromListWith (<>) $ second Set.singleton <$> rules'
+makeRulesMap rules pages = Map.fromListWith (<>) $ second one <$> rules'
  where
   pagesSet = Set.fromList pages
   rules' = filter (\(before, after) -> before `member` pagesSet && after `member` pagesSet) rules

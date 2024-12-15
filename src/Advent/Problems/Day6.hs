@@ -3,7 +3,7 @@
 module Advent.Problems.Day6 (parse, solve) where
 
 import Relude
-import Relude.Extra (lookup, member, toPairs)
+import Relude.Extra (lookup, member, toPairs, (!?))
 
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
@@ -44,8 +44,8 @@ solve (tileMap, grid) =
 visitedByGuard :: RectSquareGrid -> Set (Index RectSquareGrid) -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid, SquareDirection))
 visitedByGuard grid obstacles = go mempty
  where
-  obstaclesByX = Map.fromListWith (<>) $ second Set.singleton <$> Set.elems obstacles
-  obstaclesByY = Map.fromListWith (<>) $ second Set.singleton . swap <$> Set.elems obstacles
+  obstaclesByX = Map.fromListWith (<>) $ second one <$> Set.elems obstacles
+  obstaclesByY = Map.fromListWith (<>) $ second one . swap <$> Set.elems obstacles
 
   go :: Set (Index RectSquareGrid, SquareDirection) -> Index RectSquareGrid -> SquareDirection -> (GuardOutcome, Set (Index RectSquareGrid, SquareDirection))
   go seen (x, y) facing = case nextStop of
@@ -55,7 +55,7 @@ visitedByGuard grid obstacles = go mempty
         then (Looping, seen)
         else let facing' = turnRight facing in go (Set.insert ((x', y'), facing) seen <> see pathToObstacle) (x', y') facing'
    where
-    see = Set.fromList . fmap (,facing)
+    see = fromList . fmap (,facing)
 
     pathToExit dir = takeWhile (grid `contains`) $ case dir of
       North -> [(x, y + i) | i <- [1 ..]]
@@ -69,8 +69,8 @@ visitedByGuard grid obstacles = go mempty
       West -> (\x' -> ((x' + 1, y), [(xi, y) | xi <- [x' + 1 .. x]])) <$> Set.lookupLT x row
       East -> (\x' -> ((x' - 1, y), [(xi, y) | xi <- [x .. x' - 1]])) <$> Set.lookupGT x row
      where
-      col = fromMaybe mempty $ lookup x obstaclesByX
-      row = fromMaybe mempty $ lookup y obstaclesByY
+      col = fromMaybe mempty $ obstaclesByX !? x
+      row = fromMaybe mempty $ obstaclesByY !? y
 
 turnRight :: SquareDirection -> SquareDirection
 turnRight North = East
@@ -105,5 +105,5 @@ obstacleMightLoop obstacles ((x, y), facing) = fromMaybe False $ case facing of
   South -> lookup (y + 1) obstaclesByY >>= (fmap (const True) . Set.lookupLT x)
   West -> lookup (x + 1) obstaclesByX >>= (fmap (const True) . Set.lookupGT y)
  where
-  obstaclesByX = Map.fromListWith (<>) $ second Set.singleton <$> Set.elems obstacles
-  obstaclesByY = Map.fromListWith (<>) $ second Set.singleton . swap <$> Set.elems obstacles
+  obstaclesByX = Map.fromListWith (<>) $ second one <$> Set.elems obstacles
+  obstaclesByY = Map.fromListWith (<>) $ second one . swap <$> Set.elems obstacles

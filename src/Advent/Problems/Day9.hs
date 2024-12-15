@@ -1,7 +1,7 @@
 module Advent.Problems.Day9 (parse, solve) where
 
 import Relude
-import Relude.Extra (bimapBoth, toPairs)
+import Relude.Extra (bimapBoth, insert, insertWith, toPairs, (!?))
 
 import Data.Map.Strict qualified as Map
 import Data.Sequence (index)
@@ -50,13 +50,13 @@ solve segments = bimapBoth checksum (blockCompacted, fileCompacted)
      where
       f (m, i) (Segment block len) = case block of
         FileID _ -> (m, i + len)
-        Empty -> (Map.insertWith (flip (<>)) len [i] m, i + len)
+        Empty -> (insertWith (flip (<>)) len [i] m, i + len)
 
     segmentToBlocks :: Map FileID Address
     segmentToBlocks = fst $ foldl' f (mempty, 0) segments
      where
       f (m, i) (Segment block len) = case block of
-        FileID n -> (Map.insert n i m, i + len)
+        FileID n -> (insert n i m, i + len)
         Empty -> (m, i + len)
 
     compactFile :: (Seq Block, Map Int [Address]) -> Segment -> (Seq Block, Map Int [Address])
@@ -67,10 +67,10 @@ solve segments = bimapBoth checksum (blockCompacted, fileCompacted)
         Just (_, []) -> (bs, empties)
         Just (l, addr : addrs) -> if addr > oldBlockAddr then (bs, empties) else (bs'', empties')
          where
-          oldBlockAddr = fromMaybe (error "unknown segment") $ Map.lookup n segmentToBlocks
+          oldBlockAddr = fromMaybe (error "unknown segment") $ segmentToBlocks !? n
           bs' = foldl' (\b i -> Seq.update (oldBlockAddr + i) Empty b) bs [0 .. len - 1]
           bs'' = foldl' (\b i -> Seq.update (addr + i) (FileID n) b) bs' [0 .. len - 1]
-          empties' = Map.insert l addrs empties & (if l > len then Map.insertWith (\new old -> sort $ new <> old) (l - len) [addr + len] else id)
+          empties' = insert l addrs empties & (if l > len then insertWith (\new old -> sort $ new <> old) (l - len) [addr + len] else id)
        where
         closestEmpty :: Maybe (Int, [Address])
         closestEmpty = viaNonEmpty head $ sortBy sortSpace $ toPairs $ Map.filterWithKey (\k _ -> k >= len) empties

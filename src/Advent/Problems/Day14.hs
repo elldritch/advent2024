@@ -1,7 +1,7 @@
 module Advent.Problems.Day14 (parse, solve, solve') where
 
 import Relude
-import Relude.Extra (bimapBoth, insertWith, lookup)
+import Relude.Extra (bimapBoth, insertWith, (!?))
 
 import Data.Char (intToDigit)
 import Data.List (minimumBy, partition)
@@ -36,7 +36,7 @@ solve' (width, height) start =
   display robots =
     concatMap
       ( \(x, y) ->
-          maybe "." (one . intToDigit) (lookup (x, y) botsInPosition)
+          maybe "." (one . intToDigit) (botsInPosition !? (x, y))
             <> (if x == width - 1 then "\n" else "")
       )
       [(x, y) | y <- [0 .. height - 1], x <- [0 .. width - 1]]

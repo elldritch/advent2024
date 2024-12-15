@@ -1,7 +1,7 @@
 module Advent.Problems.Day12 (parse, solve) where
 
 import Relude
-import Relude.Extra (bimapBoth, lookup)
+import Relude.Extra (bimapBoth, insert, (!?))
 
 import Algebra.Graph (edges)
 import Algebra.Graph.ToGraph (reachable)
@@ -21,7 +21,7 @@ solve :: (Map (Index RectOctGrid) Char, RectOctGrid) -> (Int, Int)
 solve (plantMap, grid) = bimapBoth (sum . (uncurry (*) <$>) . fenceMap) (perimeter, corners)
  where
   squareDirections = [North, South, West, East]
-  plant = fromMaybe (error "position has no plant") . flip lookup plantMap
+  plant = fromMaybe (error "position has no plant") . (plantMap !?)
 
   regionGraph = edges $ concatMap (catMaybes . (<$> squareDirections) . tileEdge) (indices grid)
    where
@@ -32,14 +32,14 @@ solve (plantMap, grid) = bimapBoth (sum . (uncurry (*) <$>) . fenceMap) (perimet
   regionMap :: Map (Index RectOctGrid) RegionID
   regionMap = fst $ foldl' addRegion (mempty, 0) $ indices grid
    where
-    addRegion (m, i) pos = case lookup pos m of
+    addRegion (m, i) pos = case m !? pos of
       Just _ -> (m, i)
-      Nothing -> (foldl' (\m' x -> Map.insert x i m') (Map.insert pos i m) $ reachable regionGraph pos, i + 1)
+      Nothing -> (foldl' (\m' x -> insert x i m') (insert pos i m) $ reachable regionGraph pos, i + 1)
 
   fenceMap :: (Index RectOctGrid -> Int) -> Map RegionID (Int, Int)
   fenceMap cost =
     Map.fromListWith (\(a, p) (a', p') -> (a + a', p + p')) $
-      (\pos -> (fromMaybe (error "position has no region") $ pos `lookup` regionMap, (1, cost pos)))
+      (\pos -> (fromMaybe (error "position has no region") $ regionMap !? pos, (1, cost pos)))
         <$> indices grid
 
   perimeter :: Index RectOctGrid -> Int

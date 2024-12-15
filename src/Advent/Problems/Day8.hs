@@ -1,7 +1,7 @@
 module Advent.Problems.Day8 (parse, solve) where
 
 import Relude
-import Relude.Extra (bimapBoth, lookup, toPairs)
+import Relude.Extra (bimapBoth, toPairs, (!?))
 
 import Data.List ((\\))
 import Data.Map.Strict qualified as Map
@@ -28,7 +28,7 @@ solve (tileMap, grid) = bimapBoth (length . antinodesWith) (fundamentalAntinodes
   antennaAntinodesWith generator (pos, freq) =
     concatMap
       (takeWhile (grid `contains`) . generator pos)
-      $ fromMaybe mempty (lookup freq antennaeByFrequency) \\ [pos]
+      $ fromMaybe mempty (antennaeByFrequency !? freq) \\ [pos]
   antinodesWith generator = sortNub $ concatMap (antennaAntinodesWith generator) antennae
 
   fundamentalAntinodes = allAntinodes [2]
